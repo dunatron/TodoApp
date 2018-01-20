@@ -14544,8 +14544,8 @@ var TodoList = function TodoList(_ref3) {
   );
 };
 
-var AddTodo = function AddTodo(props, _ref4) {
-  var store = _ref4.store;
+var AddTodo = function AddTodo(_ref4) {
+  var dispatch = _ref4.dispatch;
 
   var input = void 0;
 
@@ -14559,7 +14559,7 @@ var AddTodo = function AddTodo(props, _ref4) {
       'button',
       {
         onClick: function onClick() {
-          store.dispatch({
+          dispatch({
             type: 'ADD_TODO',
             id: nextTodoId++,
             text: input.value
@@ -14570,9 +14570,18 @@ var AddTodo = function AddTodo(props, _ref4) {
     )
   );
 };
-AddTodo.contextTypes = {
-  store: _propTypes2.default.object
-};
+// AddTodo = connect(
+//   state => {
+//     return {};
+//   },
+//   dispatch => {
+//     return { dispatch };
+//   }
+// )(AddTodo);
+// null means we don't subscribe to the store, as we do not need to use it
+AddTodo = (0, _reactRedux.connect)(null, function (dispatch) {
+  return { dispatch: dispatch };
+})(AddTodo);
 
 var getVisibleTodos = function getVisibleTodos(todos, filter) {
   switch (filter) {
@@ -14615,57 +14624,22 @@ var Footer = function Footer() {
   );
 };
 
-var VisibleTodoList = function (_Component2) {
-  _inherits(VisibleTodoList, _Component2);
-
-  function VisibleTodoList() {
-    _classCallCheck(this, VisibleTodoList);
-
-    return _possibleConstructorReturn(this, (VisibleTodoList.__proto__ || Object.getPrototypeOf(VisibleTodoList)).apply(this, arguments));
-  }
-
-  _createClass(VisibleTodoList, [{
-    key: 'componentDidMount',
-    value: function componentDidMount() {
-      var _this4 = this;
-
-      var store = this.context.store;
-
-      this.unsubscribe = store.subscribe(function () {
-        return _this4.forceUpdate();
-      });
-    }
-  }, {
-    key: 'componentWillUnmount',
-    value: function componentWillUnmount() {
-      this.unsubscribe();
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      var props = this.props;
-      var store = this.context.store;
-
-      var state = store.getState();
-
-      return _react2.default.createElement(TodoList, {
-        todos: getVisibleTodos(state.todos, state.visibilityFilter),
-        onTodoClick: function onTodoClick(id) {
-          return store.dispatch({
-            type: 'TOGGLE_TODO',
-            id: id
-          });
-        }
-      });
-    }
-  }]);
-
-  return VisibleTodoList;
-}(_react.Component);
-
-VisibleTodoList.contextTypes = {
-  store: _propTypes2.default.object
+var mapStateToTodoListProps = function mapStateToTodoListProps(state) {
+  return {
+    todos: getVisibleTodos(state.todos, state.visibilityFilter)
+  };
 };
+var mapDispatchToTodoListProps = function mapDispatchToTodoListProps(dispatch) {
+  return {
+    onTodoClick: function onTodoClick(id) {
+      dispatch({
+        type: 'TOGGLE_TODO',
+        id: id
+      });
+    }
+  };
+};
+var VisibleTodoList = (0, _reactRedux.connect)(mapStateToTodoListProps, mapDispatchToTodoListProps)(TodoList);
 
 var nextTodoId = 0;
 
@@ -14678,27 +14652,6 @@ var TodoApp = function TodoApp() {
     _react2.default.createElement(Footer, null)
   );
 };
-
-// class Provider extends Component {
-//
-//   getChildContext() {
-//     return {
-//       store: this.props.store
-//     };
-//
-//   }
-//
-//
-//   render() {
-//     return this.props.children;
-//   }
-//
-// }
-//
-// Provider.childContextTypes = {
-//   store: React.PropTypes.object
-// };
-
 
 _reactDom2.default.render(_react2.default.createElement(
   'div',
