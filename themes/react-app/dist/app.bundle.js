@@ -13740,6 +13740,8 @@ module.exports = function (regExp, replace) {
 "use strict";
 
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 // import { Provider as Redux } from 'react-redux';
 
@@ -13775,6 +13777,12 @@ var _silverstripeLogo2 = _interopRequireDefault(_silverstripeLogo);
 var _styles = __webpack_require__(485);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -13858,14 +13866,13 @@ var store = (0, _redux.createStore)(todoApp);
 
 console.log(store.getState());
 
-var FilterLink = function FilterLink(_ref) {
-  var filter = _ref.filter,
-      currentFilter = _ref.currentFilter,
+var Link = function Link(_ref) {
+  var active = _ref.active,
       children = _ref.children,
       _onClick = _ref.onClick;
 
 
-  if (filter === currentFilter) {
+  if (active) {
     return _react2.default.createElement(
       'span',
       null,
@@ -13878,15 +13885,65 @@ var FilterLink = function FilterLink(_ref) {
     { href: '#',
       onClick: function onClick(e) {
         e.preventDefault();
-        _onClick(filter);
+        _onClick();
       } },
     children
   );
 };
 
+var FilterLink = function (_Component) {
+  _inherits(FilterLink, _Component);
+
+  function FilterLink() {
+    _classCallCheck(this, FilterLink);
+
+    return _possibleConstructorReturn(this, (FilterLink.__proto__ || Object.getPrototypeOf(FilterLink)).apply(this, arguments));
+  }
+
+  _createClass(FilterLink, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this2 = this;
+
+      this.unsubscribe = store.subscribe(function () {
+        return _this2.forceUpdate();
+      });
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this.unsubscribe();
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var props = this.props;
+      var state = store.getState();
+
+      return _react2.default.createElement(
+        Link,
+        {
+          active: props.filter === state.visibilityFilter,
+          onClick: function onClick() {
+            return store.dispatch({
+              type: 'SET_VISIBILITY_FILTER',
+              filter: props.filter
+            });
+          }
+        },
+        props.children
+      );
+    }
+  }]);
+
+  return FilterLink;
+}(_react.Component);
+
 /**
  * Presentational component, doesn't specify behaviour
  */
+
+
 var Todo = function Todo(_ref2) {
   var onClick = _ref2.onClick,
       completed = _ref2.completed,
@@ -13920,9 +13977,7 @@ var TodoList = function TodoList(_ref3) {
   );
 };
 
-var AddTodo = function AddTodo(_ref4) {
-  var onAddClick = _ref4.onAddClick;
-
+var AddTodo = function AddTodo() {
   var input = void 0;
 
   return _react2.default.createElement(
@@ -13935,7 +13990,11 @@ var AddTodo = function AddTodo(_ref4) {
       'button',
       {
         onClick: function onClick() {
-          onAddClick(input.value);
+          store.dispatch({
+            type: 'ADD_TODO',
+            id: nextTodoId++,
+            text: input.value
+          });
           input.value = '';
         } },
       'Add ToDo'
@@ -13958,9 +14017,7 @@ var getVisibleTodos = function getVisibleTodos(todos, filter) {
   }
 };
 
-var Footer = function Footer(_ref5) {
-  var visibilityFilter = _ref5.visibilityFilter,
-      onFilterClick = _ref5.onFilterClick;
+var Footer = function Footer() {
   return _react2.default.createElement(
     'p',
     null,
@@ -13968,84 +14025,98 @@ var Footer = function Footer(_ref5) {
     ' ',
     _react2.default.createElement(
       FilterLink,
-      { filter: 'SHOW_ALL', currentFilter: visibilityFilter, onClick: onFilterClick },
+      { filter: 'SHOW_ALL' },
       'ALL'
     ),
     ' ',
     _react2.default.createElement(
       FilterLink,
-      { filter: 'SHOW_ACTIVE', currentFilter: visibilityFilter, onClick: onFilterClick },
+      { filter: 'SHOW_ACTIVE' },
       'Active'
     ),
     ' ',
     _react2.default.createElement(
       FilterLink,
-      { filter: 'SHOW_COMPLETED', currentFilter: visibilityFilter, onClick: onFilterClick },
+      { filter: 'SHOW_COMPLETED' },
       'Completed'
     )
   );
 };
 
+var VisibleTodoList = function (_Component2) {
+  _inherits(VisibleTodoList, _Component2);
+
+  function VisibleTodoList() {
+    _classCallCheck(this, VisibleTodoList);
+
+    return _possibleConstructorReturn(this, (VisibleTodoList.__proto__ || Object.getPrototypeOf(VisibleTodoList)).apply(this, arguments));
+  }
+
+  _createClass(VisibleTodoList, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this4 = this;
+
+      this.unsubscribe = store.subscribe(function () {
+        return _this4.forceUpdate();
+      });
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this.unsubscribe();
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var props = this.props;
+      var state = store.getState();
+
+      return _react2.default.createElement(TodoList, {
+        todos: getVisibleTodos(state.todos, state.visibilityFilter),
+        onTodoClick: function onTodoClick(id) {
+          return store.dispatch({
+            type: 'TOGGLE_TODO',
+            id: id
+          });
+        }
+      });
+    }
+  }]);
+
+  return VisibleTodoList;
+}(_react.Component);
+
 var nextTodoId = 0;
 
-var TodoApp = function TodoApp(_ref6) {
-  var todos = _ref6.todos,
-      visibilityFilter = _ref6.visibilityFilter;
+var TodoApp = function TodoApp() {
   return _react2.default.createElement(
     'div',
     null,
-    _react2.default.createElement(AddTodo, { onAddClick: function onAddClick(text) {
-        return store.dispatch({
-          type: 'ADD_TODO',
-          id: nextTodoId++,
-          text: text
-        });
-      } }),
-    _react2.default.createElement(TodoList, {
-      todos: getVisibleTodos(todos, visibilityFilter),
-      onTodoClick: function onTodoClick(id) {
-        return store.dispatch({
-          type: 'TOGGLE_TODO',
-          id: id
-        });
-      }
-    }),
-    _react2.default.createElement(Footer, {
-      visibilityFilter: visibilityFilter,
-      onFilterClick: function onFilterClick(filter) {
-        return store.dispatch({
-          type: 'SET_VISIBILITY_FILTER',
-          filter: filter
-        });
-      }
-    })
+    _react2.default.createElement(AddTodo, null),
+    _react2.default.createElement(VisibleTodoList, null),
+    _react2.default.createElement(Footer, null)
   );
 };
 
-var render = function render() {
-
-  _reactDom2.default.render(_react2.default.createElement(
-    'div',
-    { className: 'App' },
-    _react2.default.createElement(
-      'header',
-      { className: 'App-header' },
-      _react2.default.createElement('img', { src: _silverstripeLogo2.default, className: 'ss-logo', alt: 'logo' }),
-      _react2.default.createElement('img', { src: _logo2.default, className: 'App-logo', alt: 'logo' }),
-      _react2.default.createElement('img', { src: _webpack2.default, className: 'App-logo', alt: 'logo' }),
-      _react2.default.createElement('img', { src: _reduxLogo2.default, className: 'App-logo', alt: 'logo' })
-    ),
-    _react2.default.createElement(
-      'h1',
-      null,
-      'To Do App & Redux'
-    ),
-    _react2.default.createElement(TodoApp, store.getState())
-  ), document.getElementById('react-root'));
-};
-
-store.subscribe(render);
-render();
+_reactDom2.default.render(_react2.default.createElement(
+  'div',
+  { className: 'App' },
+  _react2.default.createElement(
+    'header',
+    { className: 'App-header' },
+    _react2.default.createElement('img', { src: _silverstripeLogo2.default, className: 'ss-logo', alt: 'logo' }),
+    _react2.default.createElement('img', { src: _logo2.default, className: 'App-logo', alt: 'logo' }),
+    _react2.default.createElement('img', { src: _webpack2.default, className: 'App-logo', alt: 'logo' }),
+    _react2.default.createElement('img', { src: _reduxLogo2.default, className: 'App-logo', alt: 'logo' })
+  ),
+  _react2.default.createElement(
+    'h1',
+    null,
+    'To Do App & Redux'
+  ),
+  _react2.default.createElement(TodoApp, null)
+), document.getElementById('react-root'));
 
 /***/ }),
 /* 445 */
