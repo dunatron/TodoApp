@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
-// import { Provider as Redux } from 'react-redux';
+import PropTypes from 'prop-types';
+import { Provider } from 'react-redux';
 import {combineReducers, createStore} from 'redux';
 import logo from './img/logo.svg';
 import './App.css';
@@ -84,9 +85,6 @@ const todoApp = combineReducers({
   visibilityFilter
 });
 
-const store = createStore(todoApp);
-
-console.log(store.getState());
 
 const Link = ({active, children, onClick}) => {
 
@@ -108,6 +106,7 @@ const Link = ({active, children, onClick}) => {
 class FilterLink extends Component {
 
   componentDidMount() {
+    const {store} = this.context;
     this.unsubscribe = store.subscribe(() =>
       this.forceUpdate()
     );
@@ -119,6 +118,7 @@ class FilterLink extends Component {
 
   render() {
     const props = this.props;
+    const {store} = this.context;
     const state = store.getState();
 
     return (
@@ -139,6 +139,10 @@ class FilterLink extends Component {
   }
 }
 
+FilterLink.contextTypes = {
+  store: PropTypes.object
+};
+
 /**
  * Presentational component, doesn't specify behaviour
  */
@@ -155,7 +159,7 @@ const Todo = ({onClick, completed, text}) => (
   </li>
 );
 
-const TodoList = ({ todos, onTodoClick ) => (
+const TodoList = ({todos, onTodoClick}) => (
   <ul>
     {todos.map(todo =>
       <Todo
@@ -166,7 +170,7 @@ const TodoList = ({ todos, onTodoClick ) => (
   </ul>
 );
 
-const AddTodo = () => {
+const AddTodo = (props, {store}) => {
   let input;
 
   return (
@@ -186,7 +190,10 @@ const AddTodo = () => {
       </button>
     </div>
   )
-}
+};
+AddTodo.contextTypes = {
+  store: PropTypes.object
+};
 
 const getVisibleTodos = (todos, filter) => {
   switch (filter) {
@@ -213,12 +220,13 @@ const Footer = () => (
     {' '}
     <FilterLink filter='SHOW_COMPLETED'>Completed</FilterLink>
   </p>
-)
+);
 
 
 class VisibleTodoList extends Component {
 
   componentDidMount() {
+    const {store} = this.context;
     this.unsubscribe = store.subscribe(() =>
       this.forceUpdate()
     );
@@ -230,6 +238,7 @@ class VisibleTodoList extends Component {
 
   render() {
     const props = this.props;
+    const {store} = this.context;
     const state = store.getState();
 
     return (
@@ -251,6 +260,10 @@ class VisibleTodoList extends Component {
   }
 }
 
+VisibleTodoList.contextTypes = {
+  store: PropTypes.object
+};
+
 let nextTodoId = 0;
 
 const TodoApp = () => (
@@ -271,9 +284,12 @@ ReactDOM.render(
       <img src={reduxLogo} className="App-logo" alt="logo"/>
     </header>
     <h1>To Do App & Redux</h1>
-    <TodoApp />
+
+    <Provider store={createStore(todoApp)}>
+      <TodoApp/>
+    </Provider>
+
   </div>,
 
   document.getElementById('react-root')
 );
-
