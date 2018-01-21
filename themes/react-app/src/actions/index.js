@@ -1,18 +1,21 @@
-let nextTodoId = 0;
+import {v4} from 'node-uuid'
+
+
 export const addTodo = (text) => {
   return {
     type: 'ADD_TODO',
-    id: (nextTodoId++).toString(),
+    id: v4(),
     text,
   };
 };
 
-export const setVisibilityFilter = (filter) => {
-  return {
-    type: 'SET_VISIBILITY_FILTER',
-    filter,
-  };
-};
+// No longer used as FilterLink now uses react routers Link
+// export const setVisibilityFilter = (filter) => {
+//   return {
+//     type: 'SET_VISIBILITY_FILTER',
+//     filter,
+//   };
+// };
 
 export const toggleTodo = (id) => {
   return {
