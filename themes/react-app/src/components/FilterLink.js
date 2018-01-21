@@ -29,10 +29,6 @@ import {BrowserRouter, Link, Route } from 'react-router-dom'
 const FilterLink = ({filter, children}) => (
   <Link
     to={filter === 'all' ? '' : filter}
-    activeStyle={{
-      textDecoration: 'none',
-      color: 'black',
-    }}
   >
     {children}
   </Link>

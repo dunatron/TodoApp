@@ -4,11 +4,11 @@ import Footer from './Footer';
 import AddTodo from './AddTodo';
 import VisibleTodoList from './VisibleTodoList';
 
-const App = ({match}) => (
+const App = () => (
   <div>
     <LogoHeader/>
     <AddTodo />
-    <VisibleTodoList filter={match.params.filter || 'all'} />
+    <VisibleTodoList />
     <Footer />
     <button onClick={() => {
       localStorage.removeItem('state')
