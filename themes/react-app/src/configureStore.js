@@ -4,6 +4,7 @@ import todoApp from './reducers';
 import {loadState, saveState} from './localStorage';
 
 const addLoggingToDispatch = (store) => {
+
   const rawDispatch = store.dispatch;
 
   if (!console.group) {
@@ -18,6 +19,7 @@ const addLoggingToDispatch = (store) => {
     console.groupEnd(action.type);
     return returnValue;
   }
+
 };
 
 const configureStore = () => {
